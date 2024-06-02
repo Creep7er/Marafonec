@@ -1,19 +1,19 @@
 
 #include <EEPROM.h>   //библиотека для работы со внутренней памятью ардуино
+#include <LiquidCrystal_I2C.h>  // библиотека для дисплея
 
-
-
-#include <LiquidCrystal_I2C.h>  // подключаем библу
-
-LiquidCrystal_I2C lcd(0x27, 16, 2);  // адрес, столбцов, строк
+LiquidCrystal_I2C lcd(0x27, 16, 2);  // пододлючение дисплея
 
 unsigned long lastturn, time_press; //переменные хранения времени
 float SPEED; //переменная хранения скорости в виде десятичной дроби
 float DIST; //переменная хранения расстояния в виде десятичной дроби
 float w_length=2.050; //длина окружности колеса в метрах
-bool flag = false; //флажок для хранения (что выводим на дисплее, скорость или расстояние)
-boolean state, button; //флажки для обработчика нажатия кнопки
 
+// Переменные на будущее для добавления кнопок
+bool flag = false; //флажок для кнопочек
+bool state, button; //флажки для обработчика нажатия кнопки
+
+// Иконка Скорости
 byte speed_icon[8] = {
   0b00111,
   0b01110,
@@ -25,6 +25,7 @@ byte speed_icon[8] = {
   0b00000
 };
 
+// Иконка расстояния 
 byte dist_icon[8] = {
   0b01110,
   0b11111,
@@ -42,16 +43,12 @@ void setup() {
   attachInterrupt(0,sens,RISING); //подключить прерывание на 2 пин при повышении сигнала
   pinMode(3, OUTPUT);   //3 пин как выход
   digitalWrite(3, HIGH);  //подать 5 вольт на 3 пин
-  pinMode(6, INPUT);   //сюда подключена кнопка
+  // pinMode(6, INPUT);   //сюда подключена кнопка
   DIST=(float)EEPROM.read(0)/10.0; //вспоминаем пройденное расстояние при запуске системы (деление на 10 нужно для сохранения десятых долей расстояния, см. запись)
 
 
   lcd.init();           // инициализация
   lcd.backlight();      // включить подсветку  
-//  lcd.setCursor(1, 0);  // столбец 1 строка 0
-//  lcd.print("Hello, world!");
-//  lcd.setCursor(4, 1);  // столбец 4 строка 1
-//  lcd.print("GyverKIT");
 }
 
 void sens() {
@@ -69,6 +66,7 @@ void loop() {
   int ed_sp=(((float)cel_sp/10)-floor((float)cel_sp/10))*10;
   int dr_sp=(float)(SPEED-floor(SPEED))*10;
 
+  // Создаем символы с иконками
   lcd.createChar(0, speed_icon);
   lcd.createChar(1, dist_icon);
   
@@ -79,7 +77,7 @@ void loop() {
 //    disp.set(LED_0F[dr_sp],0);  //вывод после точки   
 //  }
 
-  lcd.setCursor(1, 0);  // столбец 1 строка 0
+  lcd.setCursor(1, 0);
   lcd.write(byte(0));  lcd.print(" "); lcd.print(SPEED); // lcd.print("."); lcd.print(des_sp);
 
 
@@ -96,7 +94,7 @@ void loop() {
 //    disp.set(LED_0F[dr_di],0);  //вывод после точки  
 //  }
 
-  lcd.setCursor(1, 1);  // столбец 1 строка 0
+  lcd.setCursor(1, 1);
   lcd.write(byte(1)); lcd.print(" "); lcd.print(DIST);
 
   if ((millis()-lastturn)>2000){ //если сигнала нет больше 2 секунды
